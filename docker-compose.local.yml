@@ -1,0 +1,66 @@
+# PlayEdu 本地部署 - 從原始碼建置
+# 使用方式: docker compose -f docker-compose.local.yml up --build -d
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "10"
+
+networks:
+  playedu:
+    driver: bridge
+
+volumes:
+  mysql-data:
+
+services:
+  playedu:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    image: playedu:local
+    restart: always
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=playedu
+      - DB_USER=root
+      - DB_PASS=playeduxyz
+      - SA_TOKEN_IS_CONCURRENT=false
+      - SA_TOKEN_JWT_SECRET_KEY=${PLAYEDU_JWT_KEY:-playeduxyz}
+    ports:
+      - "${PLAYEDU_API_PORT:-9700}:9898"
+      - "${PLAYEDU_PC_PORT:-9800}:9800"
+      - "${PLAYEDU_H5_PORT:-9801}:9801"
+      - "${PLAYEDU_ADMIN_PORT:-9900}:9900"
+    networks:
+      - playedu
+    depends_on:
+      mysql:
+        condition: service_healthy
+    logging: *default-logging
+
+  mysql:
+    build:
+      context: ./docker/mysql
+      dockerfile: Dockerfile.local
+    image: playedu-mysql:local
+    restart: always
+    environment:
+      - MYSQL_DATABASE=playedu
+      - MYSQL_ROOT_PASSWORD=playeduxyz
+      - TZ=UTC
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT:-23307}:3306"
+    networks:
+      - playedu
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pplayeduxyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    logging: *default-logging

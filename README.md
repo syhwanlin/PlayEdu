@@ -20,17 +20,32 @@ PlayEdu 是由白书科技团队经营多年线上教培领域打造出的一款
 git clone --branch main https://gitee.com/playeduxyz/playedu.git playedu
 ```
 
-构建镜像：
+### 方式一：使用預建映像（推薦）
 
 ```
-cd playedu && docker-compose up -d
+cd playedu && docker compose up -d
 ```
 
-命令执行完成以后，打开您的浏览器，输入 `http://localhost:9900` 即可访问后台管理界面，默认管理员账号和密码 `admin@playedu.xyz / playedu` 。
+### 方式二：本地建置部署
 
-- PC 端口 `http://localhost:9800`
-- H5 端口 `http://localhost:9801`
-- API 端口 `http://localhost:9700`
+從原始碼建置並部署（適用於開發或無法存取預建映像的環境）：
+
+```bash
+cd playedu
+cp .env.example .env   # 可選：自訂埠號與 JWT 金鑰
+docker compose -f docker-compose.local.yml up --build -d
+```
+
+首次建置約需 10–15 分鐘（需下載依賴並編譯前後端）。
+
+---
+
+命令執行完成後，開啟瀏覽器輸入 `http://localhost:9900` 即可存取後台管理介面，預設管理員帳號密碼為 `admin@playedu.xyz / playedu`。
+
+- 管理後台 `http://localhost:9900`
+- PC 學員端 `http://localhost:9800`
+- H5 學員端 `http://localhost:9801`
+- API 埠 `http://localhost:9700`
 
 ## 🔰️ 软件安全
 

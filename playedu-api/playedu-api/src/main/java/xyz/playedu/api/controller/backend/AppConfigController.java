@@ -18,6 +18,7 @@ package xyz.playedu.api.controller.backend;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import xyz.playedu.api.request.backend.AppConfigRequest;
@@ -85,8 +86,8 @@ public class AppConfigController {
             String s3Bucket = data.get(ConfigConstant.S3_BUCKET);
             if (StringUtil.isNotEmpty(s3Bucket)) {
                 String bucketDomain = s3Bucket + ".";
-                String endpointLower = s3Endpoint.toLowerCase();
-                String bucketDomainLower = bucketDomain.toLowerCase();
+                String endpointLower = s3Endpoint.toLowerCase(Locale.ROOT);
+                String bucketDomainLower = bucketDomain.toLowerCase(Locale.ROOT);
                 if (endpointLower.contains(bucketDomainLower)) {
                     int index = endpointLower.indexOf(bucketDomainLower);
                     s3Endpoint =

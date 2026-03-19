@@ -15,10 +15,13 @@
  */
 package xyz.playedu.system.checks;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.jdbc.core.ConnectionCallback;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -869,7 +872,13 @@ public class MigrationCheck implements CommandLineRunner {
                 }
 
                 // 创建数据表
-                jdbcTemplate.execute(tableItem.get("sql"));
+                final String sql = tableItem.get("sql");
+                jdbcTemplate.execute((ConnectionCallback<Void>) conn -> {
+                    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                        ps.execute();
+                    }
+                    return null;
+                });
                 // 记录写入到migrations表中
                 migrationService.store(migrationName);
             }

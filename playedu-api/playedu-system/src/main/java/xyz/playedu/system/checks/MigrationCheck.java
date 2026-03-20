@@ -18,9 +18,7 @@ package xyz.playedu.system.checks;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.springframework.jdbc.core.ConnectionCallback;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,136 +33,102 @@ import xyz.playedu.system.service.MigrationService;
 @Slf4j
 public class MigrationCheck implements CommandLineRunner {
 
-    public static final List<Map<String, String>> TABLE_SQL =
+    private record MigrationEntry(String table, String name, String sql) {}
+
+    public static final List<MigrationEntry> TABLE_SQL =
             new ArrayList<>() {
                 {
-                    add(
-                            new HashMap<>() {
-                                {
-                                    put("table", "migrations");
-                                    put("name", "20231208_14_00_00_migrations");
-                                    put(
-                                            "sql",
-                                            """
-                                                    CREATE TABLE `migrations` (
-                                                      `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                                      `migration` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '变更记录',
-                                                      PRIMARY KEY (`id`)
-                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程章节表';
-                                                    """);
-                                }
-                            });
+                    add(new MigrationEntry(
+                            "migrations",
+                            "20231208_14_00_00_migrations",
+                            """
+                                    CREATE TABLE `migrations` (
+                                      `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                      `migration` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '变更记录',
+                                      PRIMARY KEY (`id`)
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程章节表';
+                                    """));
 
-                    add(
-                            new HashMap<>() {
-                                {
-                                    put("table", "admin_permissions");
-                                    put("name", "20231208_14_00_00_admin_permissions");
-                                    put(
-                                            "sql",
-                                            """
-                                                    CREATE TABLE `admin_permissions` (
-                                                      `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                                      `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '类型[行为:action,数据:data]',
-                                                      `group_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '分组',
-                                                      `sort` int(11) NOT NULL DEFAULT 0 COMMENT '升序',
-                                                      `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '权限名',
-                                                      `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'slug',
-                                                      `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
-                                                      PRIMARY KEY (`id`)
-                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT 'SQL变更记录表';
-                                                    """);
-                                }
-                            });
+                    add(new MigrationEntry(
+                            "admin_permissions",
+                            "20231208_14_00_00_admin_permissions",
+                            """
+                                    CREATE TABLE `admin_permissions` (
+                                      `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                      `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '类型[行为:action,数据:data]',
+                                      `group_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '分组',
+                                      `sort` int(11) NOT NULL DEFAULT 0 COMMENT '升序',
+                                      `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '权限名',
+                                      `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'slug',
+                                      `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
+                                      PRIMARY KEY (`id`)
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT 'SQL变更记录表';
+                                    """));
 
-                    add(
-                            new HashMap<>() {
-                                {
-                                    put("table", "admin_logs");
-                                    put("name", "20231208_14_00_00_admin_logs");
-                                    put(
-                                            "sql",
-                                            """
-                                                    CREATE TABLE `admin_logs`
-                                                    (
-                                                        `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                                        `admin_id`       int(11) NOT NULL DEFAULT 0 COMMENT '管理员ID',
-                                                        `admin_name`     varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '管理员姓名',
-                                                        `module`         varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT '模块',
-                                                        `title`          varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT '请求方法标题',
-                                                        `opt`            int(2) NOT NULL DEFAULT 0 COMMENT '操作指令（0其它 1新增 2修改 3删除 4登录 5退出登录）',
-                                                        `method`         varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '请求方法',
-                                                        `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT '请求方式POST,GET,PUT,DELETE',
-                                                        `url`            varchar(266) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '请求URL',
-                                                        `param`          mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '请求参数',
-                                                        `result`         mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '返回参数',
-                                                        `ip`             varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT 'IP',
-                                                        `ip_area`        varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT '地址',
-                                                        `error_msg`      mediumtext COLLATE utf8mb4_unicode_ci COMMENT '错误消息',
-                                                        `created_at`     timestamp NULL DEFAULT NULL COMMENT '创建时间',
-                                                        PRIMARY KEY (`id`),
-                                                        KEY              `a_m_o` (`admin_id`,`module`,`opt`)
-                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员操作日志记录表';
-                                                    """);
-                                }
-                            });
+                    add(new MigrationEntry(
+                            "admin_logs",
+                            "20231208_14_00_00_admin_logs",
+                            """
+                                    CREATE TABLE `admin_logs`
+                                    (
+                                        `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                        `admin_id`       int(11) NOT NULL DEFAULT 0 COMMENT '管理员ID',
+                                        `admin_name`     varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '管理员姓名',
+                                        `module`         varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT '模块',
+                                        `title`          varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT '请求方法标题',
+                                        `opt`            int(2) NOT NULL DEFAULT 0 COMMENT '操作指令（0其它 1新增 2修改 3删除 4登录 5退出登录）',
+                                        `method`         varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '请求方法',
+                                        `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT '请求方式POST,GET,PUT,DELETE',
+                                        `url`            varchar(266) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '请求URL',
+                                        `param`          mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '请求参数',
+                                        `result`         mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '返回参数',
+                                        `ip`             varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT 'IP',
+                                        `ip_area`        varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL DEFAULT '' COMMENT '地址',
+                                        `error_msg`      mediumtext COLLATE utf8mb4_unicode_ci COMMENT '错误消息',
+                                        `created_at`     timestamp NULL DEFAULT NULL COMMENT '创建时间',
+                                        PRIMARY KEY (`id`),
+                                        KEY              `a_m_o` (`admin_id`,`module`,`opt`)
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员操作日志记录表';
+                                    """));
 
-                    add(
-                            new HashMap<>() {
-                                {
-                                    put("table", "admin_role_permission");
-                                    put("name", "20231208_14_00_00_admin_role_permission");
-                                    put(
-                                            "sql",
-                                            """
-                                                    CREATE TABLE `admin_role_permission` (
-                                                      `role_id` int(11) unsigned NOT NULL DEFAULT 0 COMMENT '角色ID',
-                                                      `perm_id` int(10) unsigned NOT NULL DEFAULT 0 COMMENT '权限ID',
-                                                      KEY `role_id` (`role_id`),
-                                                      KEY `perm_id` (`perm_id`)
-                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色权限关联表';
-                                                    """);
-                                }
-                            });
+                    add(new MigrationEntry(
+                            "admin_role_permission",
+                            "20231208_14_00_00_admin_role_permission",
+                            """
+                                    CREATE TABLE `admin_role_permission` (
+                                      `role_id` int(11) unsigned NOT NULL DEFAULT 0 COMMENT '角色ID',
+                                      `perm_id` int(10) unsigned NOT NULL DEFAULT 0 COMMENT '权限ID',
+                                      KEY `role_id` (`role_id`),
+                                      KEY `perm_id` (`perm_id`)
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色权限关联表';
+                                    """));
 
-                    add(
-                            new HashMap<>() {
-                                {
-                                    put("table", "admin_roles");
-                                    put("name", "20231208_14_00_00_admin_roles");
-                                    put(
-                                            "sql",
-                                            """
-                                                    CREATE TABLE `admin_roles` (
-                                                      `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                                      `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '角色名',
-                                                      `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'slug',
-                                                      `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
-                                                      `updated_at` timestamp NULL DEFAULT NULL COMMENT '修改时间',
-                                                      PRIMARY KEY (`id`),
-                                                      UNIQUE KEY `slug` (`slug`)
-                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色表';
-                                                    """);
-                                }
-                            });
+                    add(new MigrationEntry(
+                            "admin_roles",
+                            "20231208_14_00_00_admin_roles",
+                            """
+                                    CREATE TABLE `admin_roles` (
+                                      `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                      `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '角色名',
+                                      `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'slug',
+                                      `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
+                                      `updated_at` timestamp NULL DEFAULT NULL COMMENT '修改时间',
+                                      PRIMARY KEY (`id`),
+                                      UNIQUE KEY `slug` (`slug`)
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色表';
+                                    """));
 
-                    add(
-                            new HashMap<>() {
-                                {
-                                    put("table", "admin_user_role");
-                                    put("name", "20231208_14_00_00_admin_user_role");
-                                    put(
-                                            "sql",
-                                            """
-                                                    CREATE TABLE `admin_user_role` (
-                                                      `admin_id` int(11) unsigned NOT NULL DEFAULT 0 COMMENT '管理员ID',
-                                                      `role_id` int(10) unsigned NOT NULL DEFAULT 0 COMMENT '角色ID',
-                                                      KEY `admin_id` (`admin_id`),
-                                                      KEY `role_id` (`role_id`)
-                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色关联表';
-                                                    """);
-                                }
-                            });
+                    add(new MigrationEntry(
+                            "admin_user_role",
+                            "20231208_14_00_00_admin_user_role",
+                            """
+                                    CREATE TABLE `admin_user_role` (
+                                      `admin_id` int(11) unsigned NOT NULL DEFAULT 0 COMMENT '管理员ID',
+                                      `role_id` int(10) unsigned NOT NULL DEFAULT 0 COMMENT '角色ID',
+                                      KEY `admin_id` (`admin_id`),
+                                      KEY `role_id` (`role_id`)
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色关联表';
+                                    """));
 
                     add(
                             new HashMap<>() {

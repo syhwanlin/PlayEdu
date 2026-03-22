@@ -15,11 +15,8 @@
  */
 package xyz.playedu.system.checks;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.jdbc.core.ConnectionCallback;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -35,10 +32,8 @@ public class MigrationCheck implements CommandLineRunner {
 
     private record MigrationEntry(String table, String name, String sql) {}
 
-    public static final List<MigrationEntry> TABLE_SQL =
-            new ArrayList<>() {
-                {
-                    add(new MigrationEntry(
+    public static final List<MigrationEntry> TABLE_SQL = List.of(
+            new MigrationEntry(
                             "migrations",
                             "20231208_14_00_00_migrations",
                             """
@@ -47,9 +42,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       `migration` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '变更记录',
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程章节表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "admin_permissions",
                             "20231208_14_00_00_admin_permissions",
                             """
@@ -63,9 +58,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT 'SQL变更记录表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "admin_logs",
                             "20231208_14_00_00_admin_logs",
                             """
@@ -89,9 +84,9 @@ public class MigrationCheck implements CommandLineRunner {
                                         PRIMARY KEY (`id`),
                                         KEY              `a_m_o` (`admin_id`,`module`,`opt`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员操作日志记录表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "admin_role_permission",
                             "20231208_14_00_00_admin_role_permission",
                             """
@@ -101,9 +96,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       KEY `role_id` (`role_id`),
                                       KEY `perm_id` (`perm_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色权限关联表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "admin_roles",
                             "20231208_14_00_00_admin_roles",
                             """
@@ -116,9 +111,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       UNIQUE KEY `slug` (`slug`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "admin_user_role",
                             "20231208_14_00_00_admin_user_role",
                             """
@@ -128,9 +123,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       KEY `admin_id` (`admin_id`),
                                       KEY `role_id` (`role_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员角色关联表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "admin_users",
                             "20231208_14_00_00_admin_users",
                             """
@@ -149,9 +144,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       UNIQUE KEY `administrators_email_unique` (`email`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "app_config",
                             "20231208_14_00_00_app_config",
                             """
@@ -171,9 +166,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       UNIQUE KEY `app_config_key_unique` (`key_name`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '系统配置表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "course_attachment",
                             "20231208_14_00_00_course_attachment",
                             """
@@ -189,9 +184,9 @@ public class MigrationCheck implements CommandLineRunner {
                                         PRIMARY KEY (`id`),
                                         KEY          `course_id` (`course_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程附件表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "course_attachment_download_log",
                             "20231208_14_00_00_course_attachment_download_log",
                             """
@@ -207,9 +202,9 @@ public class MigrationCheck implements CommandLineRunner {
                                         `created_at`            timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                                         PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程附件下载日志记录表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "course_chapters",
                             "20231208_14_00_00_course_chapters",
                             """
@@ -222,8 +217,8 @@ public class MigrationCheck implements CommandLineRunner {
                                       `updated_at` timestamp NULL DEFAULT NULL COMMENT '修改时间',
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '管理员权限表';
-                                    """));
-                    add(new MigrationEntry(
+                                    """),
+            new MigrationEntry(
                             "course_department_user",
                             "20231208_14_00_00_course_department_user",
                             """
@@ -234,9 +229,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       KEY `course_id` ( `course_id` ),
                                     KEY `range_id` ( `range_id` )
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程指派范围表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "course_hour",
                             "20231208_14_00_00_course_hour",
                             """
@@ -254,9 +249,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       KEY `course_id` (`course_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程课时表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "courses",
                             "20230406_16_51_17_1111_courses",
                             """
@@ -277,9 +272,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       `deleted_at` timestamp NULL DEFAULT NULL COMMENT '删除时间',
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "departments",
                             "20230406_16_51_17_1111_departments",
                             """
@@ -294,9 +289,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       `updated_at` timestamp NULL DEFAULT NULL COMMENT '修改时间',
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '学员上传图片日志记录表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "resource_categories",
                             "20231208_14_00_00_resource_categories",
                             """
@@ -310,9 +305,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       `updated_at` timestamp NULL DEFAULT NULL COMMENT '修改时间',
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '部门表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "resource",
                             "20231208_14_00_00_resource",
                             """
@@ -331,9 +326,9 @@ public class MigrationCheck implements CommandLineRunner {
                                        PRIMARY KEY (`id`),
                                        KEY `type` (`type`)
                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '资源表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "resource_category",
                             "20231208_14_00_00_resource_category",
                             """
@@ -343,9 +338,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       KEY `cid` (`cid`),
                                       KEY `rid` (`rid`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '资源分类关联表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "resource_course_category",
                             "20231208_14_00_00_resource_course_category",
                             """
@@ -355,9 +350,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       KEY `course_id` (`course_id`),
                                       KEY `category_id` (`category_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '课程分类关联表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "resource_extra",
                             "20231208_14_00_00_resource_extra",
                             """
@@ -370,9 +365,9 @@ public class MigrationCheck implements CommandLineRunner {
                                        PRIMARY KEY (`id`),
                                        UNIQUE KEY `rid` (`rid`)
                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '资源详细信息表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "user_course_hour_records",
                             "20231208_14_00_00_user_course_hour_records",
                             """
@@ -391,9 +386,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       KEY `u_h_c_id` (`user_id`,`hour_id`,`course_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '线上课课时学员学习记录表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "user_course_records",
                             "20231208_14_00_00_user_course_records",
                             """
@@ -410,9 +405,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       `updated_at` timestamp NULL DEFAULT NULL COMMENT '修改时间',
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '分类表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "user_department",
                             "20231208_14_00_00_user_department",
                             """
@@ -422,9 +417,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       KEY `user_id` (`user_id`),
                                       KEY `dep_id` (`dep_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '学员部门关联表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "user_learn_duration_records",
                             "20231208_14_00_00_user_learn_duration_records",
                             """
@@ -440,9 +435,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       KEY `u_d` (`user_id`,`created_date`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '学员学习时长表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "user_learn_duration_stats",
                             "20231208_14_00_00_user_learn_duration_stats",
                             """
@@ -454,9 +449,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       KEY `u_d` (`user_id`,`created_date`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '学员学习时长记录表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "user_login_records",
                             "20231208_14_00_00_user_login_records",
                             """
@@ -476,9 +471,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       UNIQUE KEY `jti` (`jti`),
                                       KEY `user_id` (`user_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '学员登录记录表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "user_upload_image_logs",
                             "20231208_14_00_00_user_upload_image_logs",
                             """
@@ -495,9 +490,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '线上课学员学习记录表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "users",
                             "20231208_14_00_00_users",
                             """
@@ -525,9 +520,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       UNIQUE KEY `email` (`email`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT '学员表';
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "ldap_user",
                             "20240322_17_29_17_ldap_user",
                             """
@@ -545,8 +540,8 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       UNIQUE KEY `unique_uuid` (`uuid`) USING BTREE
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                                    """));
-                    add(new MigrationEntry(
+                                    """),
+            new MigrationEntry(
                             "ldap_department",
                             "20240322_17_29_30_ldap_department",
                             """
@@ -560,9 +555,9 @@ public class MigrationCheck implements CommandLineRunner {
                                       PRIMARY KEY (`id`),
                                       UNIQUE KEY `unique_uuid` (`uuid`) USING BTREE
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                                    """));
+                                    """),
 
-                    add(new MigrationEntry(
+            new MigrationEntry(
                             "",
                             "20250519_09_00_00_migrations-data-insert",
                             """
@@ -571,8 +566,8 @@ public class MigrationCheck implements CommandLineRunner {
                                     ('20240126_15_00_00_course_add_admin_id'),
                                     ('20240722_12_00_00_course_hour_add_deleted'),
                                     ('20240815_15_00_00_user_deteled_column_add');
-                                    """));
-                    add(new MigrationEntry(
+                                    """),
+            new MigrationEntry(
                             "ldap_sync_record",
                             "20250517_13_23_ldap_sync_record",
                             """
@@ -595,8 +590,8 @@ public class MigrationCheck implements CommandLineRunner {
                                       `updated_at` datetime NOT NULL,
                                       PRIMARY KEY (`id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='LDAP同步记录表';
-                                    """));
-                    add(new MigrationEntry(
+                                    """),
+            new MigrationEntry(
                             "ldap_sync_department_detail",
                             "20250519_10_25_01_ldap_sync_department_detail",
                             """
@@ -613,8 +608,8 @@ public class MigrationCheck implements CommandLineRunner {
                                       KEY `record_id` (`record_id`),
                                       KEY `department_id` (`department_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='LDAP部门同步详情表';
-                                    """));
-                    add(new MigrationEntry(
+                                    """),
+            new MigrationEntry(
                             "ldap_sync_user_detail",
                             "20250519_10_25_02_ldap_sync_user_detail",
                             """
@@ -634,9 +629,8 @@ public class MigrationCheck implements CommandLineRunner {
                                       KEY `record_id` (`record_id`),
                                       KEY `user_id` (`user_id`)
                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='LDAP用户同步详情表';
-                                    """));
-                }
-            };
+                                    """)
+        );
 
     @Autowired private JdbcTemplate jdbcTemplate;
 
@@ -668,13 +662,7 @@ public class MigrationCheck implements CommandLineRunner {
                 }
 
                 // 创建数据表
-                final String sql = tableItem.sql();
-                jdbcTemplate.execute((ConnectionCallback<Void>) conn -> {
-                    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                        ps.execute();
-                    }
-                    return null;
-                });
+                jdbcTemplate.execute(tableItem.sql());
                 // 记录写入到migrations表中
                 migrationService.store(migrationName);
             }

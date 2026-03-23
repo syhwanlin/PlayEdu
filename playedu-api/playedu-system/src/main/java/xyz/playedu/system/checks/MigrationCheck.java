@@ -22,9 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
 import xyz.playedu.system.service.MigrationService;
 
@@ -102,11 +101,9 @@ public class MigrationCheck implements CommandLineRunner {
                 }
 
                 // 创建数据表
-                ClassPathResource sqlResource = new ClassPathResource(tableItem.resourcePath());
-                jdbcTemplate.execute((ConnectionCallback<Void>) conn -> {
-                    ScriptUtils.executeSqlScript(conn, sqlResource);
-                    return null;
-                });
+                ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+                        new ClassPathResource(tableItem.resourcePath()));
+                populator.execute(jdbcTemplate.getDataSource());
                 // 记录写入到migrations表中
                 migrationService.store(migrationName);
             }
